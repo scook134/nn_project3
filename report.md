@@ -1,6 +1,6 @@
 # Discrete Probabilistic Forecasting for Time Series
 
-This report summarizes the implementation and recorded outputs in [project3.ipynb](/C:/Users/LeoSp/OneDrive/Desktop/Neural Networks/nn_project3/project3.ipynb) for discrete probabilistic forecasting on the ETTh1 `OT` signal. Where the repository README states broader goals, this report distinguishes those goals from what is actually implemented in the notebook.
+This report summarizes the implementation and recorded outputs in Project 3 for discrete probabilistic forecasting on the ETTh1 `OT` signal. Where the repository README states broader goals, this report distinguishes those goals from what is actually implemented in the notebook.
 
 ## 1. Introduction
 
@@ -10,7 +10,7 @@ In this repository, the normalized `OT` signal is quantized into `128` bins, and
 
 ## 2. Dataset and Preprocessing
 
-The notebook loads `ETTh1.csv` and uses only the `OT` column as a univariate series ([project3.ipynb](/C:/Users/LeoSp/OneDrive/Desktop/Neural Networks/nn_project3/project3.ipynb)). The CSV in the repository contains `17420` rows. A plot titled `OT Signal (First 1000 points)` is generated from the first `1000` raw observations.
+The notebook loads `ETTh1.csv` and uses only the `OT` column as a univariate series. The CSV in the repository contains `17420` rows. A plot titled `OT Signal (First 1000 points)` is generated from the first `1000` raw observations.
 
 Preprocessing consists of standardization with `StandardScaler`, applied to the full `OT` series:
 
@@ -57,7 +57,7 @@ To decode generated tokens back to continuous values, the notebook maps each tok
 
 ## 4. Models
 
-Despite the broader modeling description in [README.md](/C:/Users/LeoSp/OneDrive/Desktop/Neural Networks/nn_project3/README.md), the notebook implements one model only: `TokenLSTM`.
+The notebook implements `TokenLSTM`:
 
 The architecture is:
 
@@ -74,16 +74,6 @@ The printed model summary is:
 | Output layer | `Linear(128, 128)` |
 
 The scalar-valued time series is therefore replaced by discrete token indices, which are embedded before entering the LSTM. The final linear layer produces `128` logits per time step, corresponding to the categorical distribution over quantization bins.
-
-Additional models:
-
-| Model type | Status in notebook |
-|---|---|
-| Vanilla RNN | not available |
-| GRU | not available |
-| Transformer | not available |
-| Gaussian baseline | not available |
-| Multiple discrete architectures | not available |
 
 ## 5. Training Procedure
 
@@ -108,8 +98,6 @@ The notebook prints the following average loss per epoch:
 | 4 | 1.3737 |
 | 5 | 1.1553 |
 
-Hardware runtime details beyond `cpu`: `not available`.
-
 ## 6. Forecast Generation
 
 Forecast generation is implemented autoregressively. Given a starting token sequence:
@@ -122,13 +110,9 @@ Forecast generation is implemented autoregressively. Given a starting token sequ
 
 The resulting token sequence is then decoded to continuous values by mapping each token to its bin center and inverting the standardization.
 
-Temperature sampling: `not available`.
-
-Top-k or nucleus sampling: `not available`.
-
 ## 7. Evaluation and Results
 
-The notebook provides qualitative plots and training loss, but no held-out quantitative forecasting metrics.
+Teh notebook provides qualitative plots and training loss, but no held-out quantitative forecasting metrics.
 
 ### Recorded numerical results
 
