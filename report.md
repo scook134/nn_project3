@@ -255,12 +255,6 @@ The notebooks provide the following qualitative artifacts:
   - one-step plots comparing true values against decoded expected predictions
   - autoregressive plots comparing the true trajectory against sampled forecasts
 
-The notebooks do not provide a dedicated calibration metric, likelihood comparison across both paradigms, or a quantitative measure of multimodality. For those quantities, the appropriate entries are:
-
-- Quantitative uncertainty calibration comparison: `[INSERT RESULT]`
-- Explicit multimodality metric: `[INSERT RESULT]`
-- Asymmetry/non-Gaussianity diagnostic: `[INSERT RESULT]`
-
 The saved outputs do support the following evidence-based summary:
 
 - the discrete formulation is fully operational
