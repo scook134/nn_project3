@@ -1035,6 +1035,44 @@ These are the questions a professor may ask if they think you only memorized a s
 11. **Why does `T_train` mean different things in the two notebooks?**
 12. **What in the repo would you change first to make the experiment publishable rather than classroom-level?**
 
+### Red-Flag Answers
+
+1. **Show me exactly where the target shift is created in code.**  
+   In `AR_RNN-v8.ipynb`, the shift is created when the window `seq` is split into `X_list.append(seq[:-1])` and `Y_list.append(seq[1:])`. In `STUDENT_discrete_time_series_llm_notebook.ipynb`, it is created by `X = np.stack([series_bins[s:s+T] ...])` and `Y = np.stack([series_bins[s+1:s+T+1] ...])`.
+
+2. **Show me exactly where positivity of `std` is enforced.**  
+   In the continuous notebook, `std` is made positive with `torch.nn.functional.softplus(...)`. That appears in `RNN.forward(...)`, `LSTM.forward(...)`, and `LSTMTransformer.forward(...)`.
+
+3. **Why is the discrete one-step MSE not just token accuracy?**  
+   Because `evaluate_one_step(...)` does not score only whether the predicted bin is correct. It computes a probability distribution over bins, takes the expected bin index under that distribution, dequantizes that expected value, and then computes MSE in continuous value space.
+
+4. **Why is the discrete autoregressive metric not a full-test-set metric?**  
+   Because `evaluate_autoregressive(...)` is called with `num_sequences=64`, and inside the function it uses `num_sequences = min(num_sequences, len(X_test))`. So the reported autoregressive MSE is averaged over 64 test windows, not all 1000.
+
+5. **What is the difference between `mean`, `std`, `hidden`, and `sample` in the continuous models?**  
+   `mean` is the predicted Gaussian center at each time step. `std` is the predicted Gaussian spread at each time step. `hidden` is the recurrent state summary returned by the RNN/LSTM backbone, or contextual representation in the hybrid case. `sample` is a stochastic draw from the predicted Gaussian, computed as `mean + std * noise`.
+
+6. **What is the exact input shape to `LSTMTransformer.forward(...)`?**  
+   `(batch_size, seq_len, 1)`. In training and evaluation, the notebook constructs tensors like `(N_train, T_train, 1)` or `(N_test, T_test, 1)` before calling the model.
+
+7. **What is the exact shape of the Transformer logits in the discrete notebook?**  
+   `(B, T, 128)`, because the output head maps each time step to `NUM_BINS = 128` classes.
+
+8. **Why is calling the baseline model “Transformer” slightly misleading?**  
+   Because the baseline class is `LSTMTransformer`, not a pure Transformer. It first runs an LSTM, then projects the LSTM outputs, adds positional encoding, and only then applies Transformer encoder layers.
+
+9. **Which class is defined twice, and why does that matter?**  
+   `TR_extended` is defined twice in `AR_RNN-v8.ipynb`. The first version trains with L2 loss on sampled outputs, but the second version overwrites it and trains with Gaussian NLL. This matters because the saved final Transformer-hybrid run uses the second definition, so that is the loss we should describe.
+
+10. **Why is `train_min` not really a training-only statistic?**  
+   Because the code sets `train_min = series_sub.min()` and `train_max = series_sub.max()` before any train/test split. So those bounds are computed from the entire subsampled series.
+
+11. **Why does `T_train` mean different things in the two notebooks?**  
+   In the continuous notebook, `T_train = 100` is directly used to slice training inputs and targets, so models are trained on the first 100 positions. In the discrete notebook, `T_train = 100` is mainly the context length used for forecasting and evaluation, while training still uses full 200-token sequences from `train_loader`.
+
+12. **What in the repo would you change first to make the experiment publishable rather than classroom-level?**  
+   First, fix preprocessing leakage by fitting normalization and quantization bounds on training data only. Second, add a validation split and repeated-seed runs. Third, make the comparisons fairer by matching forecast horizons and evaluating autoregressive metrics over the full test set for all models.
+
 # 9. "If You Get Stuck" Answers
 
 Use these only when needed, and keep them honest.
